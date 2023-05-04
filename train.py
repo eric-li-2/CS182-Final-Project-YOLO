@@ -2,17 +2,16 @@ import os
 import sys
 import torch
 from tqdm import tqdm
-
 from torch.utils.data import DataLoader
 import torch.optim as optim
-
-
-from datasets import CircleSquareYOLODataset
-from model import Yolov1
+import torch.nn as nn
+from datasets import CircleSquareYOLODataset, CircleSquareClassifierDataset
+from model import Yolov1, BaselineClassifier, BaselineObjectDetector
 from loss import YoloLoss
 from utils import (
     cellboxes_to_boxes,
     convert_cellboxes,
+    baseline_cellboxes_to_boxes,
     non_max_suppression,
     # mean_average_precision,
     plot_image,
@@ -45,6 +44,20 @@ def train_fn(train_loader, model, optimizer, loss_fn):
 
     print(f"Mean loss was {sum(mean_loss)/len(mean_loss)}")
 
+def clf_accuracy(test_loader, model):
+    """
+    Returns accuracy of baseline classifier predicting squares vs circles
+    """
+    model.eval()
+    total = len(test_loader) * BATCH_SIZE
+    correct = 0
+    with torch.no_grad():
+        for x, y in test_loader:
+            x, y = x.to(DEVICE), y.to(DEVICE)
+            y_hat = model(x)
+            correct += torch.sum(torch.argmax(y_hat, axis=1) == y)
+    print('Test accuracy: {:.3f}'.format(correct / total))
+
 def testModel(test_loader, model):
     """
     Performs inference on YOLO model and plots bounding boxes on input image
@@ -59,30 +72,49 @@ def testModel(test_loader, model):
     # nms_pred_boxes = [non_max_suppression(pred_boxes[i]) for i in range(9)]
     # showData(img, nms_pred_boxes)
 
+def testBaseline(test_loader, model):
+    """
+    Perform inference on baseline object detector and plots bounding boxes
+    """
+    img, _ = next(iter(test_loader))
+    img = img.to(DEVICE)
+    out = model(img) # Shape [B,S*S*(C+5*B)]
+    pred_boxes = baseline_cellboxes_to_boxes(out) # shape [B, S*S, 6]
+    # true_boxes = cellboxes_to_boxes(label_matrix)[0]
+    # nms_pred_boxes = non_max_suppression(pred_boxes[0], 0.2, 0.5)
+    print(pred_boxes[0])
+    plot_image(img[0].permute(2,1,0).to("cpu"), pred_boxes[0])
+    # nms_pred_boxes = [non_max_suppression(pred_boxes[i]) for i in range(9)]
+    # showData(img, pred_boxes[0])
+
 if __name__ == '__main__':
     # Hyperparameters etc. 
     LEARNING_RATE = 5e-5
-    DEVICE = "cuda" if torch.cuda.is_available else "cpu"
-    # DEVICE = "cpu"
+    # DEVICE = "cuda" if torch.cuda.is_available else "cpu"
+    DEVICE = 'cpu'
     BATCH_SIZE = 8 # 64 in original paper but I don't have that much vram, grad accum?
     WEIGHT_DECAY = 0
     EPOCHS = 10
     # NUM_WORKERS = 2
     # PIN_MEMORY = True
-    LOAD_MODEL = False
+    LOAD_MODEL = True
     LOAD_MODEL_FILE = "pretrained.pth.tar"
     # IMG_DIR = "data/images"
     # LABEL_DIR = "data/labels"
 
     data_dir = os.path.join('.', 'data')
-    train_dataset = CircleSquareYOLODataset(data_dir)
-    test_dataset = CircleSquareYOLODataset(None) # generate images during runtime
+
+    train_dataset = CircleSquareClassifierDataset(data_dir)
+    test_dataset = CircleSquareClassifierDataset(None) # generate images during runtime
+    model = BaselineClassifier().to(DEVICE)
+
+    # train_dataset = CircleSquareYOLODataset(data_dir)
+    # test_dataset = CircleSquareYOLODataset(None) # generate images during runtime
+    # model = Yolov1().to(DEVICE)
 
     train_loader = DataLoader(
         dataset=train_dataset,
         batch_size=BATCH_SIZE,
-        # num_workers=NUM_WORKERS,
-        # pin_memory=PIN_MEMORY,
         shuffle=True, # TODO
         drop_last=True,
     )
@@ -90,29 +122,30 @@ if __name__ == '__main__':
     test_loader = DataLoader(
         dataset=test_dataset,
         batch_size=BATCH_SIZE,
-        # num_workers=NUM_WORKERS,
-        # pin_memory=PIN_MEMORY,
         shuffle=True,
         # drop_last=True,
     )
 
-    model = Yolov1(S=7, B=2, C=2).to(DEVICE)
     optimizer = optim.Adam(
         model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY
     )
-    loss_fn = YoloLoss(S=7, B=2, C=2)
+    loss_fn = nn.CrossEntropyLoss()
 
     if LOAD_MODEL:
         print("Loading pre-trained model...")
         if os.path.exists(LOAD_MODEL_FILE):
             checkpoint = torch.load(LOAD_MODEL_FILE)
             load_checkpoint(checkpoint, model, optimizer)
+            objdet = BaselineObjectDetector(model)
+            testBaseline(test_loader, objdet)
         else:
             sys.exit(f"File {LOAD_MODEL_FILE} not found. Exiting")
     else:
         print("Training model...")
         for epoch in range(EPOCHS):
             train_fn(train_loader, model, optimizer, loss_fn)
+        print("Computing accuracy of baseline classifier...")
+        clf_accuracy(test_loader, model)
         checkpoint = {
                     "state_dict": model.state_dict(),
                     "optimizer": optimizer.state_dict(),
@@ -123,4 +156,7 @@ if __name__ == '__main__':
         time.sleep(10)
         sys.exit("done")
     
-    testModel(test_loader, model)
+    # print("Computing accuracy of baseline classifier...")
+    # clf_accuracy(test_loader, model)
+    
+    # testModel(test_loader, model)

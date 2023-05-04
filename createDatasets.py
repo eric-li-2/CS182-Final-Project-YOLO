@@ -30,6 +30,8 @@ overwrite = True
 import torch
 import os
 import sys
+import torchvision
+import matplotlib.pyplot as plt
 from torchvision.io import write_png
 from tqdm import tqdm 
 
@@ -56,6 +58,62 @@ def bothVisible(bbox1, bbox2, thresh=0.7):
     area1 = (bbox1[1,0] - bbox1[0,0]) * (bbox1[1,1] - bbox1[0,1])
     area2 = (bbox2[1,0] - bbox2[0,0]) * (bbox2[1,1] - bbox2[0,1])
     return inter / area1 < (1 - thresh) and inter / area2 < (1 - thresh)
+
+def generateSingleCircleSquaresImage(height, width, num_classes=3):
+    """
+    Creates image with a single square or circle or nothing
+    """
+    # generate a noisy background
+    mean = torch.zeros((3, height, width))
+    std = torch.ones(mean.shape)
+    img = torch.normal(mean, std).abs().clamp(0,1) / 2
+    label = None
+
+    # randomly place shape
+    rand = torch.rand(1).item()
+    center = torch.zeros((2,)).uniform_(0.2,0.8)
+    d = torch.zeros((1,)).uniform_(0.1,0.5) # diameter of the circle
+    r = d / 2
+    x1 = center[0] - r
+    y1 = center[1] - r
+    x2 = center[0] + r
+    y2 = center[1] + r
+    cx = center[0] 
+    cy = center[1] 
+
+    if rand < (1/3): # draw circle
+        x = torch.arange(height, dtype=torch.float).repeat(width,1).permute(1,0)
+        y = torch.arange(width, dtype=torch.float).repeat(height,1)
+        x -= cx * height 
+        y -= cy * width 
+        dist = x*x + y*y 
+        r_pixel = r * min(width, height)
+        r2_pixel = r_pixel * r_pixel
+        img += torch.where(dist < r2_pixel, 0.5, 0)
+        label = 0
+
+    elif rand < (2/3): # draw square
+        x = torch.arange(height, dtype=torch.float).repeat(width,1).permute(1,0)
+        y = torch.arange(width, dtype=torch.float).repeat(height,1)
+        x -= cx * height 
+        y -= cy * width 
+        x = torch.abs(x)
+        y = torch.abs(y)
+        dist = torch.max(torch.stack((x,y), dim=0), dim=0)[0]
+        r_pixel = r * min(width, height)
+        r2_pixel = r_pixel * r_pixel
+        img += torch.where(dist < r_pixel, 0.5, 0)
+        label = 1
+     
+    else: 
+        label = 2
+
+    img = img.clamp(0,1)
+    img *= 255
+    img = img.type(torch.uint8)
+
+    return img, label
+    
 
 def generateCircleSquaresImage(height, width, max_circles, thresh=0.8):
     """
@@ -132,7 +190,14 @@ def generateCircleSquaresImage(height, width, max_circles, thresh=0.8):
     img *= 255
     img = img.type(torch.uint8)
     return img, labels
-    
+
+def previewDataset(dataloader):
+    x_preview, _  = next(iter(dataloader))
+    grid = torchvision.utils.make_grid(x_preview, nrow=x_preview.shape[0]).permute(1,2,0)
+    plt.imshow(grid)
+    plt.title("Preview of Synthetic Circles/Squares Dataset")
+    plt.axis('off')
+    plt.show()
 
 def main():
     # create data directories
@@ -148,11 +213,9 @@ def main():
         print("Overwritting existing circle data files")
 
     num_images = 500
-    height = 448
-    width = 448
 
     for i in tqdm(range(num_images)):
-        img, labels = generateCircleSquaresImage(height, width, 5)
+        img, labels = generateSingleCircleSquaresImage(64*4, 64*4)
         img_path = os.path.join(img_root, f"circle_{i}.png")
         label_path = os.path.join(annotations_root,  f"labels_{i}.pt")
         write_png(img, img_path)

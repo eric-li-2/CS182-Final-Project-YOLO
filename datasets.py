@@ -4,7 +4,7 @@ from torchvision.io import read_image
 from utils import *
 from math import sqrt
 import os 
-from createDatasets import generateCircleSquaresImage
+from createDatasets import generateCircleSquaresImage, generateSingleCircleSquaresImage
 
 class CircleSquareYOLODataset(Dataset):
     def __init__(self, data_dir=None, S=7, B=2, C=2):
@@ -113,5 +113,51 @@ class CircleSquareYOLODataset(Dataset):
         return img, label_matrix
 
 
+class CircleSquareClassifierDataset(Dataset):
+    def __init__(self, data_dir=None, height=64*4, width=64*4):
+        """
+        This dataset returns a tuple (image, label_matrix)
+        where image is of shape [3,448, 448]
+        and label_matrix is of shape [S,S,C+2*B]
+        """
 
+        self.height = height
+        self.width = width
 
+        if data_dir == None: 
+            # generate images as they are queried
+            # mainly used for test/validation test set
+            self.num_images = 200
+            self.img_dir = None
+            self.ann_dir = None
+            return
+        self.img_dir = os.path.join(data_dir, "img")
+        self.ann_dir = os.path.join(data_dir, "annotations")
+
+        if not os.path.exists(self.img_dir):
+           print("image directory missing")
+        if not os.path.exists(self.ann_dir):
+            print("annotations directory missing") 
+        self.num_images = len(os.listdir(self.img_dir))
+        len1 = len(os.listdir(self.img_dir))
+        len2 = len(os.listdir(self.ann_dir))
+        assert len1 == len2, f"The image directory and annotation directory have unequal file amounts {len1} != {len2}"
+
+    def __len__(self):
+        return self.num_images
+
+    def __getitem__(self, idx):
+        """
+        This function returns an image, label pair
+        """
+        assert 0 <= idx  and idx < self.num_images
+        if self.img_dir == None:
+            img, labels = generateSingleCircleSquaresImage(self.height, self.width, 5)
+        else:
+            img_path = os.path.join(self.img_dir, f"circle_{idx}.png")
+            img = read_image(img_path)
+            ann_path = os.path.join(self.ann_dir, f"labels_{idx}.pt")
+            labels = torch.load(ann_path)
+        
+        img = img.float() / 255
+        return img, labels

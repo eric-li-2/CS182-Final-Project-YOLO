@@ -9,6 +9,7 @@ and modified for our purposes.
 
 import torch
 import numpy as np
+import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from collections import Counter
@@ -136,8 +137,8 @@ def plot_image(image, boxes):
             (upper_left_x * width, upper_left_y * height),
             box[2] * width,
             box[3] * height,
-            linewidth=1,
-            edgecolor="r",
+            linewidth=np.random.random()*5+1,
+            edgecolor=cm.get_cmap('spring')(np.random.random()),
             facecolor="none",
         )
         # Add the patch to the Axes
@@ -216,6 +217,23 @@ def cellboxes_to_boxes(out, S=7):
 
     return all_bboxes
 
+def baseline_cellboxes_to_boxes(out, stride=64, clf_dim=64*4, img_dim=448):
+    """
+    Accepts baseline model output of shape (batch, S, S, num_classes)
+    and returns list of bounding boxes
+    """
+    boxes = []
+    for b in range(out.shape[0]):
+        box = []
+        for i in range(out.shape[1]):
+            for j in range(out.shape[2]):
+                print(out[b,i,j,:])
+                if(out[b,i,j,0] > 0.95 or out[b,i,j,1] > 0.95):
+                    box.append([
+                        0,0,(clf_dim/2+stride*i)/448, (clf_dim/2+stride*j)/448, clf_dim/448, clf_dim/448
+                    ])
+        boxes.append(box)
+    return boxes
 
 def save_checkpoint(state, filename="my_checkpoint.pth.tar"):
     print("=> Saving checkpoint")
