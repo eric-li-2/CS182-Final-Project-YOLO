@@ -101,11 +101,16 @@ class YoloLoss(nn.Module):
             torch.flatten(exists_box * target[..., :self.C], end_dim=-2,),
         )
 
+        ### YOUR CODE HERE
+        # HINT: the loss should be a linear combination of 
+        # MSE losses calculated above.
+        # loss = NotImplementedError()
         loss = (
             self.lambda_coord * box_loss  # first two rows in paper
             + object_loss  # third row in paper
             + self.lambda_noobj * no_object_loss  # fourth row
             + class_loss  # fifth row
         )
+        ### END CODE HERE
 
         return loss
