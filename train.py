@@ -72,12 +72,12 @@ def testModel(test_loader, model, device):
     # nms_pred_boxes = [non_max_suppression(pred_boxes[i]) for i in range(9)]
     # showData(img, nms_pred_boxes)
 
-def testBaseline(test_loader, model):
+def testBaseline(test_loader, model, device):
     """
     Perform inference on baseline object detector and plots bounding boxes
     """
     img, _ = next(iter(test_loader))
-    img = img.to(DEVICE)
+    img = img.to(device)
     out = model(img) # Shape [B,S*S*(C+5*B)]
     pred_boxes = baseline_cellboxes_to_boxes(out) # shape [B, S*S, 6]
     # true_boxes = cellboxes_to_boxes(label_matrix)[0]
