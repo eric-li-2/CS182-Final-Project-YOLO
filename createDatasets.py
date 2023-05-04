@@ -151,7 +151,6 @@ def main():
     height = 448
     width = 448
 
-
     for i in tqdm(range(num_images)):
         img, labels = generateCircleSquaresImage(height, width, 5)
         img_path = os.path.join(img_root, f"circle_{i}.png")
