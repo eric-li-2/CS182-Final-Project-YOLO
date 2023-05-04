@@ -95,13 +95,23 @@ class Yolov1(nn.Module):
         # nn.LeakyReLU(0.1),
         # nn.Linear(4096, S*S*(B*5+C))
 
+        ### YOUR CODE HERE
+        # Return a module that carries out a fully connected layer
+        # 1. Flatten the output from the previous layer
+        # 2. Add a fully connected layer with 496 output features
+        # 3. Add a LeakyReLU activation with slope 0.1
+        # 4. Add a fully connected layer with the right number of output features. 
+        # HINT: look at figure 2 of the paper
+        # return NotImplementedError()        
         return nn.Sequential(
             nn.Flatten(),
             nn.Linear(1024 * S * S, 496),
-            nn.Dropout(0.0),
+            # nn.Dropout(0.0),
             nn.LeakyReLU(0.1),
             nn.Linear(496, S * S * (C + B * 5)),
         )
+        ### END CODE HERE
+
 
 class BaselineClassifier(nn.Module):
     """

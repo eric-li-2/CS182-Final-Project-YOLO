@@ -23,7 +23,7 @@ from utils import (
 # seed = 182
 # torch.manual_seed(seed)
 
-def train_fn(train_loader, model, optimizer, loss_fn):
+def train_fn(train_loader, model, optimizer, loss_fn, device):
     """
     Trains YOLO model with specified train_loader, optimizer, and loss function
     """
@@ -31,7 +31,7 @@ def train_fn(train_loader, model, optimizer, loss_fn):
     mean_loss = []
 
     for batch_idx, (x, y) in enumerate(loop):
-        x, y = x.to(DEVICE), y.to(DEVICE)
+        x, y = x.to(device), y.to(device)
         out = model(x)
         loss = loss_fn(out, y)
         mean_loss.append(loss.item())
@@ -58,12 +58,12 @@ def clf_accuracy(test_loader, model):
             correct += torch.sum(torch.argmax(y_hat, axis=1) == y)
     print('Test accuracy: {:.3f}'.format(correct / total))
 
-def testModel(test_loader, model):
+def testModel(test_loader, model, device):
     """
     Performs inference on YOLO model and plots bounding boxes on input image
     """
     img, label_matrix = next(iter(test_loader))
-    img, label_matrix = img.to(DEVICE), label_matrix.to(DEVICE)
+    img, label_matrix = img.to(device), label_matrix.to(device)
     out = model(img) # Shape [B,S*S*(C+5*B)]
     pred_boxes = cellboxes_to_boxes(out) # shape [B, S*S, 6]
     # true_boxes = cellboxes_to_boxes(label_matrix)[0]
@@ -156,7 +156,4 @@ if __name__ == '__main__':
         time.sleep(10)
         sys.exit("done")
     
-    # print("Computing accuracy of baseline classifier...")
-    # clf_accuracy(test_loader, model)
-    
-    # testModel(test_loader, model)
+    # testModel(test_loader, model, DEVICE)
