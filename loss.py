@@ -10,8 +10,8 @@ from utils import intersection_over_union
 
 
 class YoloLoss(nn.Module):
-    def __init__(self, S=7, B=2, C=2):
-        super(YoloLoss, self).__init__()
+    def __init__(self, S=7, B=2, C=2, lambda_noobj=0.5, lambda_coord=5):
+        # super(YoloLoss, self).__init__()
         self.mse = nn.MSELoss(reduction="sum")
 
         """
@@ -25,8 +25,8 @@ class YoloLoss(nn.Module):
 
         # These are from Yolo paper, signifying how much we should
         # pay loss for no object (noobj) and the box coordinates (coord)
-        self.lambda_noobj = 0.5
-        self.lambda_coord = 5
+        self.lambda_noobj = lambda_noobj
+        self.lambda_coord = lambda_coord
 
     def forward(self, predictions, target):
         # predictions are shaped (BATCH_SIZE, S*S(C+B*5) when inputted
