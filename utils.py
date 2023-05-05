@@ -217,7 +217,7 @@ def cellboxes_to_boxes(out, S=7):
 
     return all_bboxes
 
-def baseline_cellboxes_to_boxes(out, stride=64, clf_dim=64*4, img_dim=448):
+def baseline_cellboxes_to_boxes(out, stride=64, clf_dim=64*2, img_dim=448):
     """
     Accepts baseline model output of shape (batch, S, S, num_classes)
     and returns list of bounding boxes
@@ -227,7 +227,6 @@ def baseline_cellboxes_to_boxes(out, stride=64, clf_dim=64*4, img_dim=448):
         box = []
         for i in range(out.shape[1]):
             for j in range(out.shape[2]):
-                print(out[b,i,j,:])
                 if(out[b,i,j,0] > 0.95 or out[b,i,j,1] > 0.95):
                     box.append([
                         0,0,(clf_dim/2+stride*i)/448, (clf_dim/2+stride*j)/448, clf_dim/448, clf_dim/448

@@ -182,7 +182,7 @@ class BaselineClassifier(nn.Module):
         )
 
 class BaselineObjectDetector(nn.Module):
-    def __init__(self, clf, clf_dim=64*4):
+    def __init__(self, clf, clf_dim=64*2):
         """
         Baseline object detector using classifier on sliding window across image
 
@@ -193,7 +193,7 @@ class BaselineObjectDetector(nn.Module):
         super(BaselineObjectDetector, self).__init__()
         self.clf = clf
         self.clf_dim = clf_dim
-        self.stride = clf_dim // 4
+        self.stride = clf_dim // 2
         self.unfold = nn.Unfold(kernel_size=(clf_dim, clf_dim), stride=self.stride)
 
     def forward(self, x):

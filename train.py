@@ -77,12 +77,11 @@ def testBaseline(test_loader, model, device):
     Perform inference on baseline object detector and plots bounding boxes
     """
     img, _ = next(iter(test_loader))
-    img = img.to(device)
+    img = img.to(device)[[0], :]
     out = model(img) # Shape [B,S*S*(C+5*B)]
     pred_boxes = baseline_cellboxes_to_boxes(out) # shape [B, S*S, 6]
     # true_boxes = cellboxes_to_boxes(label_matrix)[0]
     # nms_pred_boxes = non_max_suppression(pred_boxes[0], 0.2, 0.5)
-    print(pred_boxes[0])
     plot_image(img[0].permute(2,1,0).to("cpu"), pred_boxes[0])
     # nms_pred_boxes = [non_max_suppression(pred_boxes[i]) for i in range(9)]
     # showData(img, pred_boxes[0])
@@ -97,8 +96,8 @@ if __name__ == '__main__':
     EPOCHS = 10
     # NUM_WORKERS = 2
     # PIN_MEMORY = True
-    LOAD_MODEL = True
-    LOAD_MODEL_FILE = "pretrained.pth.tar"
+    LOAD_MODEL = False
+    LOAD_MODEL_FILE = "pretrained_clf.pth.tar"
     # IMG_DIR = "data/images"
     # LABEL_DIR = "data/labels"
 
@@ -137,13 +136,13 @@ if __name__ == '__main__':
             checkpoint = torch.load(LOAD_MODEL_FILE)
             load_checkpoint(checkpoint, model, optimizer)
             objdet = BaselineObjectDetector(model)
-            testBaseline(test_loader, objdet)
+            testBaseline(test_loader, objdet, DEVICE)
         else:
             sys.exit(f"File {LOAD_MODEL_FILE} not found. Exiting")
     else:
         print("Training model...")
         for epoch in range(EPOCHS):
-            train_fn(train_loader, model, optimizer, loss_fn)
+            train_fn(train_loader, model, optimizer, loss_fn, DEVICE)
         print("Computing accuracy of baseline classifier...")
         clf_accuracy(test_loader, model)
         checkpoint = {

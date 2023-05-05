@@ -191,13 +191,62 @@ def generateCircleSquaresImage(height, width, max_circles, thresh=0.8):
     img = img.type(torch.uint8)
     return img, labels
 
-def previewDataset(dataloader):
+def previewDataset(dataloader, title):
     x_preview, _  = next(iter(dataloader))
     grid = torchvision.utils.make_grid(x_preview, nrow=x_preview.shape[0]).permute(1,2,0)
+    plt.figure(figsize=[20, 20])
     plt.imshow(grid)
-    plt.title("Preview of Synthetic Circles/Squares Dataset")
+    plt.title(title)
     plt.axis('off')
     plt.show()
+
+def download_multiobj_dataset():
+    overwrite = True
+    img_root = os.path.join(".", "data", "img") 
+    annotations_root = os.path.join(".", "data", "annotations")
+    try:
+        os.makedirs(img_root)
+        os.makedirs(annotations_root)
+    except FileExistsError:
+        print("Data files already exist")
+        if not overwrite:
+            sys.exit("Overwite set to false, Set overwite to true or delete data directory")
+        print("Overwritting existing circle data files")
+
+    num_images = 400
+    height = 448
+    width = 448
+
+    for i in tqdm(range(num_images)):
+        img, labels = generateCircleSquaresImage(height, width, 5)
+        img_path = os.path.join(img_root, f"circle_{i}.png")
+        label_path = os.path.join(annotations_root,  f"labels_{i}.pt")
+        write_png(img, img_path)
+        torch.save(labels, label_path)
+
+def download_clf_dataset():
+    overwrite = True
+    img_root = os.path.join(".", "clf_data", "img") 
+    annotations_root = os.path.join(".", "clf_data", "annotations")
+    try:
+        os.makedirs(img_root)
+        os.makedirs(annotations_root)
+    except FileExistsError:
+        print("Data files already exist")
+        if not overwrite:
+            sys.exit("Overwite set to false, Set overwite to true or delete data directory")
+        print("Overwritting existing circle data files")
+
+    num_images = 400
+    height = 256
+    width = 256
+
+    for i in tqdm(range(num_images)):
+        img, labels = generateSingleCircleSquaresImage(height, width)
+        img_path = os.path.join(img_root, f"circle_{i}.png")
+        label_path = os.path.join(annotations_root,  f"labels_{i}.pt")
+        write_png(img, img_path)
+        torch.save(labels, label_path)
 
 def main():
     # create data directories
@@ -212,10 +261,10 @@ def main():
             sys.exit("Overwite set to false, Set overwite to true or delete data directory")
         print("Overwritting existing circle data files")
 
-    num_images = 500
+    num_images = 400
 
     for i in tqdm(range(num_images)):
-        img, labels = generateSingleCircleSquaresImage(64*4, 64*4)
+        img, labels = generateSingleCircleSquaresImage(256, 256)
         img_path = os.path.join(img_root, f"circle_{i}.png")
         label_path = os.path.join(annotations_root,  f"labels_{i}.pt")
         write_png(img, img_path)
