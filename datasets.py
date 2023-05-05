@@ -74,7 +74,7 @@ class CircleSquareYOLODataset(Dataset):
         # the first element is the class id and the next four are x1, y1, x2, y2
         # return img, labels
         # turn labels and bboxes into label matrix
-        label_matrix = torch.zeros((self.S, self.S, self.C + 5 * self.B)) # TODO
+        label_matrix = torch.zeros((self.S, self.S, self.C + 5 * self.B))
 
         for box in labels:
             class_label, x1, y1, x2, y2 = box.tolist()
