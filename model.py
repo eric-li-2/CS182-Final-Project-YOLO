@@ -217,6 +217,7 @@ class BaselineObjectDetector(nn.Module):
         # This is to bring back the grid structure
         # 3. Run softmax on the last dimension (num_classes) to get class probabilities per patch
         # HINT: Use torch reshape and softmax
+        # clf_out = NotImplementedError()
         clf_out = self.clf(input_patches) # [bsz * out_height * out_width, num_classes]
         clf_out = clf_out.reshape(batch_size, out_height, out_width, -1) # [bsz, out_height, out_width, num_classes]
         clf_out = torch.softmax(clf_out, axis=-1) # [bsz, out_height, out_width, num_classes]
