@@ -68,7 +68,6 @@ class CircleSquareYOLODataset(Dataset):
             img = read_image(img_path)
             ann_path = os.path.join(self.ann_dir, f"labels_{idx}.pt")
             labels = torch.load(ann_path)
-        # return img, labels 
 
         # img is shape [3,H,W] and takes values [0...255]
         # labels is a list of tensor(5) objects which are the bounding boxes

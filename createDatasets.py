@@ -165,11 +165,7 @@ def generateCircleSquaresImage(height, width, max_circles, thresh=0.8):
                 r_pixel = r * min(width, height)
                 r2_pixel = r_pixel * r_pixel
                 img += torch.where(dist < r_pixel, 0.5, 0)
-                # for i in range(height):
-                #     for j in range(width):
-                #         if abs(i/height - cx) <= r and abs(j/width - cy) <= r:
-                #             img[:, i, j] += torch.normal(torch.tensor([0.5,0.5,0.5]),
-                #                                     torch.tensor([0.1,0.1,0.1])).abs().clamp(0.3,1)
+
             elif label == 1: # draw a circle
                 x = torch.arange(height, dtype=torch.float).repeat(width,1).permute(1,0)
                 y = torch.arange(width, dtype=torch.float).repeat(height,1)
@@ -179,11 +175,7 @@ def generateCircleSquaresImage(height, width, max_circles, thresh=0.8):
                 r_pixel = r * min(width, height)
                 r2_pixel = r_pixel * r_pixel
                 img += torch.where(dist < r2_pixel, 0.5, 0)
-                # for i in range(height):
-                #     for j in range(width):
-                #         if (i/height-cx)**2 + (j/width-cy)**2 < r*r:
-                #             img[:, i, j] += torch.normal(torch.tensor([0.5,0.5,0.5]),
-                #                                     torch.tensor([0.1,0.1,0.1])).abs().clamp(0.3,1)
+
     bboxes = [box.flatten() for box in bboxes]
     labels = [torch.cat((label,bbox), dim=0) for label, bbox in zip(class_labels, bboxes)]
     img = img.clamp(0,1)
