@@ -11,7 +11,7 @@ from utils import intersection_over_union
 
 class YoloLoss(nn.Module):
     def __init__(self, S=7, B=2, C=2, lambda_noobj=0.5, lambda_coord=5):
-        # super(YoloLoss, self).__init__()
+        super(YoloLoss, self).__init__()
         self.mse = nn.MSELoss(reduction="sum")
 
         """
