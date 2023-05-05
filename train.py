@@ -93,22 +93,23 @@ if __name__ == '__main__':
     DEVICE = 'cpu'
     BATCH_SIZE = 8 # 64 in original paper but I don't have that much vram, grad accum?
     WEIGHT_DECAY = 0
-    EPOCHS = 10
+    EPOCHS = 1
     # NUM_WORKERS = 2
     # PIN_MEMORY = True
-    LOAD_MODEL = False
+    LOAD_MODEL = True
     LOAD_MODEL_FILE = "pretrained_clf.pth.tar"
     # IMG_DIR = "data/images"
     # LABEL_DIR = "data/labels"
 
     data_dir = os.path.join('.', 'data')
 
-    train_dataset = CircleSquareClassifierDataset(data_dir)
-    test_dataset = CircleSquareClassifierDataset(None) # generate images during runtime
+    # train_dataset = CircleSquareClassifierDataset(data_dir)
+    # test_dataset = CircleSquareClassifierDataset(None) # generate images during runtime
+
     model = BaselineClassifier().to(DEVICE)
 
-    # train_dataset = CircleSquareYOLODataset(data_dir)
-    # test_dataset = CircleSquareYOLODataset(None) # generate images during runtime
+    train_dataset = CircleSquareYOLODataset(data_dir)
+    test_dataset = CircleSquareYOLODataset(None) # generate images during runtime
     # model = Yolov1().to(DEVICE)
 
     train_loader = DataLoader(
@@ -141,6 +142,7 @@ if __name__ == '__main__':
             sys.exit(f"File {LOAD_MODEL_FILE} not found. Exiting")
     else:
         print("Training model...")
+        # print(next(iter(train_loader))[0][0].shape)
         for epoch in range(EPOCHS):
             train_fn(train_loader, model, optimizer, loss_fn, DEVICE)
         print("Computing accuracy of baseline classifier...")
