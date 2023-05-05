@@ -175,7 +175,7 @@ class BaselineClassifier(nn.Module):
     def _create_fcs(self, num_classes=3):
         return nn.Sequential(
             nn.Flatten(),
-            nn.Linear(16384, 496),
+            nn.Linear(4096, 496),
             nn.Dropout(0.0),
             nn.LeakyReLU(0.1),
             nn.Linear(496, num_classes),

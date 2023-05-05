@@ -144,7 +144,7 @@ if __name__ == '__main__':
         for epoch in range(EPOCHS):
             train_fn(train_loader, model, optimizer, loss_fn, DEVICE)
         print("Computing accuracy of baseline classifier...")
-        clf_accuracy(test_loader, model)
+        clf_accuracy(test_loader, model, DEVICE)
         checkpoint = {
                     "state_dict": model.state_dict(),
                     "optimizer": optimizer.state_dict(),
