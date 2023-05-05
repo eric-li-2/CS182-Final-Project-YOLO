@@ -238,8 +238,8 @@ def download_clf_dataset():
         print("Overwritting existing circle data files")
 
     num_images = 400
-    height = 256
-    width = 256
+    height = 128
+    width = 128
 
     for i in tqdm(range(num_images)):
         img, labels = generateSingleCircleSquaresImage(height, width)
@@ -264,7 +264,7 @@ def main():
     num_images = 400
 
     for i in tqdm(range(num_images)):
-        img, labels = generateSingleCircleSquaresImage(256, 256)
+        img, labels = generateSingleCircleSquaresImage(128, 128)
         img_path = os.path.join(img_root, f"circle_{i}.png")
         label_path = os.path.join(annotations_root,  f"labels_{i}.pt")
         write_png(img, img_path)

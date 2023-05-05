@@ -114,7 +114,7 @@ class CircleSquareYOLODataset(Dataset):
 
 
 class CircleSquareClassifierDataset(Dataset):
-    def __init__(self, data_dir=None, height=64*4, width=64*4):
+    def __init__(self, data_dir=None, height=64*2, width=64*2):
         """
         This dataset returns a tuple (image, label_matrix)
         where image is of shape [3,448, 448]
