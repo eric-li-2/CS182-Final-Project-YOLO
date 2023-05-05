@@ -44,18 +44,18 @@ def train_fn(train_loader, model, optimizer, loss_fn, device):
 
     print(f"Mean loss was {sum(mean_loss)/len(mean_loss)}")
 
-def clf_accuracy(test_loader, model):
+def clf_accuracy(test_loader, model, device):
     """
     Returns accuracy of baseline classifier predicting squares vs circles
     """
     model.eval()
-    total = len(test_loader) * BATCH_SIZE
+    total = len(test_loader)
     correct = 0
     with torch.no_grad():
         for x, y in test_loader:
-            x, y = x.to(DEVICE), y.to(DEVICE)
+            x, y = x.to(device), y.to(device)
             y_hat = model(x)
-            correct += torch.sum(torch.argmax(y_hat, axis=1) == y)
+            correct += (torch.argmax(y_hat, axis=1) == y).float().mean()
     print('Test accuracy: {:.3f}'.format(correct / total))
 
 def testModel(test_loader, model, device):
