@@ -2,10 +2,10 @@
 
 Implementation of the YOLO Object Detection model based on the paper ["You Only Look Once: Unified, Real-Time Object Detection"](https://arxiv.org/abs/1506.02640) along with a simple two class dataset to train on.
 
-Written by Eric Li on 5/2/23
-
 This project was created by Eric Li, Jonathan Yue, Vikas Ummadisetty, and Nishant Bhakar
 for the CS182 final project.
+
+![alt text](yoloV1test.png "title")
 
 ## Project Overview
 
