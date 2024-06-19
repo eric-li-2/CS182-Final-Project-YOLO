@@ -5,7 +5,7 @@ Implementation of the YOLO Object Detection model based on the paper ["You Only 
 This project was created by Eric Li, Jonathan Yue, Vikas Ummadisetty, and Nishant Bhakar
 for the CS182 final project.
 
-![alt text](yoloV1test.png "title")
+![alt text](./yoloV1test.png "title")
 
 ## Project Overview
 
